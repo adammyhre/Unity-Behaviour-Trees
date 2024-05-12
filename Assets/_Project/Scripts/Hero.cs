@@ -1,25 +1,54 @@
 using System.Collections.Generic;
-using Pathfinding.BehaviourTrees;
+using BehaviourTrees;
+using BlackboardSystem;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityServiceLocator;
 
 [RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(HeroAnimationController))]
-public class Hero : MonoBehaviour {
+public class Hero : MonoBehaviour, IExpert {
     [SerializeField] InputReader input;
     [SerializeField] List<Transform> waypoints = new();
     [SerializeField] GameObject treasure;
     [SerializeField] GameObject treasure2;
     [SerializeField] GameObject safeSpot;
-    [SerializeField] bool inDanger;
     
     NavMeshAgent agent;
     AnimationController animations;
     BehaviourTree tree;
     
+    Blackboard blackboard;
+    BlackboardKey foundAllTreasuresKey;
+    BlackboardKey isSafeKey;
+
     void Awake() {
         agent = GetComponent<NavMeshAgent>();
         animations = GetComponent<AnimationController>();
+    }
+    
+    public int GetInsistence(Blackboard blackboard) {
+        // Found all the treasures
+        return treasure.activeSelf || treasure2.activeSelf ? 0 : 80;
+    }
+
+    public void Execute(Blackboard blackboard) {
+        blackboard.AddAction(() =>  {
+            if (blackboard.TryGetValue(foundAllTreasuresKey, out bool isSafe)) {
+                blackboard.SetValue(foundAllTreasuresKey, !treasure.activeSelf && !treasure2.activeSelf);
+            }
+        });
+    }
+    
+    void Start() {
+        blackboard = ServiceLocator.For(this).Get<BlackboardController>().GetBlackboard();
+        ServiceLocator.For(this).Get<BlackboardController>().RegisterExpert(this);
+        
+        // blackboardData.SetValuesOnBlackboard(blackboard);
+        isSafeKey = blackboard.GetOrRegisterKey("IsSafe");
+        // blackboard.SetValue(isSafeKey, false);
+        foundAllTreasuresKey = blackboard.GetOrRegisterKey("FoundAllTreasures");
+        blackboard.SetValue(foundAllTreasuresKey, false);
         
         tree = new BehaviourTree("Hero");
         
@@ -27,12 +56,14 @@ public class Hero : MonoBehaviour {
         
         Sequence runToSafetySeq = new Sequence("RunToSafety", 100);
         bool IsSafe() {
-            if (!inDanger) {
-                runToSafetySeq.Reset();
-                return false;
+            if (blackboard.TryGetValue(isSafeKey, out bool isSafe)) {
+                if (!isSafe) {
+                    runToSafetySeq.Reset();
+                    return true;
+                }
             }
 
-            return true;
+            return false;
         }
         runToSafetySeq.AddChild(new Leaf("isSafe?", new Condition(IsSafe)));
         runToSafetySeq.AddChild(new Leaf("Go To Safety", new MoveToTarget(transform, agent, safeSpot.transform)));
@@ -71,6 +102,13 @@ public class Hero : MonoBehaviour {
     void Update() {
         animations.SetSpeed(agent.velocity.magnitude);
         tree.Process();
+        
+        if (Input.GetKeyDown(KeyCode.Space)) {
+            if (blackboard.TryGetValue(isSafeKey, out bool isSafe)) {
+                blackboard.SetValue(isSafeKey, !isSafe);
+                Debug.Log($"IsSafe: {isSafe}");
+            }
+        }
     }
 
     void OnClick(RaycastHit hit) {
