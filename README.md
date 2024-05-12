@@ -4,6 +4,6 @@
 ## YouTube
 
 - [Behaviour Trees](https://youtu.be/lusROFJ3_t8)
-- [Blackboard Architecture]() Coming next week...
+- [Blackboard Architecture](https://youtu.be/HNGJ8KOqdYQ)
 
 You can also check out my [YouTube channel](https://www.youtube.com/@git-amend?sub_confirmation=1) for more Unity content.
