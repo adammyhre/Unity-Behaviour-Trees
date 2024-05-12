@@ -19,7 +19,7 @@ namespace BlackboardSystem {
         public Blackboard GetBlackboard() => blackboard;
         
         public void RegisterExpert(IExpert expert) => arbiter.RegisterExpert(expert);
-        // TODO Add DeregisterExpert method
+        public void DeregisterExpert(IExpert expert) => arbiter.DeregisterExpert(expert);
 
         void Update() {
             // Execute all agreed actions from the current iteration

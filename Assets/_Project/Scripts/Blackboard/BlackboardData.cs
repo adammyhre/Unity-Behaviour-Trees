@@ -64,14 +64,15 @@ namespace BlackboardSystem {
                 ValueType.Float => AsFloat<T>(floatValue),
                 ValueType.Bool => AsBool<T>(boolValue),
                 ValueType.String => (T)(object)stringValue,
-                ValueType.Vector3 => (T)(object)vector3Value,
+                ValueType.Vector3 => AsVector3<T>(vector3Value),
                 _ => throw new NotSupportedException($"Not supported value type: {typeof(T)}")
             };
         }
         
-        // Methods to convert primitive types to generic types with type safety and without boxing
+        // Helper methods for safe type conversions of the value types without the cost of boxing
         T AsBool<T>(bool value) => typeof(T) == typeof(bool) && value is T correctType ? correctType : default;
         T AsInt<T>(int value) => typeof(T) == typeof(int) && value is T correctType ? correctType : default;
         T AsFloat<T>(float value) => typeof(T) == typeof(float) && value is T correctType ? correctType : default;
+        T AsVector3<T>(Vector3 value) => typeof(T) == typeof(Vector3) && value is T correctType ? correctType : default;
     }
 }

@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using BlackboardSystem;
 using UnityEngine;
 using UnityServiceLocator;
@@ -12,6 +11,7 @@ public class Scout : MonoBehaviour, IExpert {
     void Start() {
         blackboard = ServiceLocator.For(this).Get<BlackboardController>().GetBlackboard();
         ServiceLocator.For(this).Get<BlackboardController>().RegisterExpert(this);
+        isSafeKey = blackboard.GetOrRegisterKey("IsSafe");
     }
 
     public int GetInsistence(Blackboard blackboard) {
@@ -23,15 +23,13 @@ public class Scout : MonoBehaviour, IExpert {
             if (blackboard.TryGetValue(isSafeKey, out bool isSafe)) {
                 blackboard.SetValue(isSafeKey, !isSafe);
             }
+            dangerSensor = false;
         });
     }
     
     void Update() {
         if (Input.GetKeyDown(KeyCode.Space)) {
-            if (blackboard.TryGetValue(isSafeKey, out bool isSafe)) {
-                blackboard.SetValue(isSafeKey, !isSafe);
-                Debug.Log($"IsSafe: {isSafe}");
-            }
+            dangerSensor = !dangerSensor;
         }
     }
 }

@@ -10,6 +10,11 @@ namespace BlackboardSystem {
             experts.Add(expert);
         }
 
+        public void DeregisterExpert(IExpert expert) {
+            Preconditions.CheckNotNull(expert);
+            experts.Remove(expert);
+        }
+
         public List<Action> BlackboardIteration(Blackboard blackboard) {
             IExpert bestExpert = null;
             int highestInsistence = 0;
@@ -24,7 +29,7 @@ namespace BlackboardSystem {
             
             bestExpert?.Execute(blackboard);
             
-            var actions = blackboard.PassedActions;
+            var actions = new List<Action>(blackboard.PassedActions);
             blackboard.ClearActions();
             
             // Return or execute the actions here
